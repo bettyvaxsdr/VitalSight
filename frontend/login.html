@@ -25,3 +25,32 @@
         <div class="cross" style="--x:37%; --delay:15s;  --dur:18s; --size:1.7rem; --op:0.10;"></div>
         <div class="cross" style="--x:58%; --delay:10s;  --dur:21s; --size:0.8rem; --op:0.20;"></div>
     </div>
+
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-cross" aria-hidden="true"></div>
+                <h1>VitalSight</h1>
+                <p>Sign in to monitor your loved ones</p>
+            </div>
+
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" autocomplete="username" />
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" />
+            </div>
+
+            <div class="error-msg" id="error-msg"></div>
+
+            <button class="login-btn" id="login-btn" onclick="handleLogin()">
+                <span id="btn-text">Sign In</span>
+                <span id="btn-spinner" class="spinner" style="display:none;"></span>
+            </button>
+        </div>
+    </div>
+</body>
+</html>
