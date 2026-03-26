@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VitalSight</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>Welcome to VitalSight!</h1>
-        <p>Check the vital parameters of your loved ones with ease.</p>
+            <p>Check the vital parameters of your loved ones with ease.</p>
         </div>
         <div class="card">
             <div><i class="fas fa-thermometer-half"></i> TEMP</div>
@@ -31,31 +32,32 @@
     </div>
 
     <script>
-        //const IP = bakend
+        const socket = io("http://localhost:5000");
 
-        async function update() {
-            try {
-                const res = await fetch(`http://${IP}:5000/api/status`);
-                const data = await res.json();
-                document.getElementById('t-val').innerText = data.temp;
-                document.getElementById('b-val').innerText = data.beat;
-                const alarmCard = document.getElementById('alarm-card');
-                if (data.alarm || data.temp < 20) {
-                    alarmCard.classList.add('alarm-active');
-                    document.getElementById('a-val').innerText = "DANGER";
-                } else {
-                    alarmCard.classList.remove('alarm-active');
-                    document.getElementById('a-val').innerText = "CLEAR";
-                }
-                if (data.alarm || data.beat < 20) {
-                    alarmCard.classList.add('alarm-active');
-                    document.getElementById('a-val').innerText = "DANGER";
-                } else {
-                    alarmCard.classList.remove('alarm-active');
-                    document.getElementById('a-val').innerText = "CLEAR";
-                }
-            } catch (e) { console.log("Waiting for data..."); }
-        }
-        setInterval(update, 1000);
+        socket.on('connect', () => {
+            console.log("Connected to server");
+        });
+
+        socket.on('new_data', (data) => {
+            document.getElementById('t-val').innerText = data.temperature;
+            document.getElementById('b-val').innerText = data.pulse;
+            const alarmCard = document.getElementById('alarm-card');
+            if (data.alarm || data.temperature < 20 || data.pulse < 20) {
+                alarmCard.classList.add('alarm-active');
+                document.getElementById('a-val').innerText = "DANGER";
+            } else {
+                alarmCard.classList.remove('alarm-active');
+                document.getElementById('a-val').innerText = "CLEAR";
+            }
+            const distCard = document.getElementById('dist-card');
+            if (data.movement_alert) {
+                distCard.classList.add('alarm-active');
+                document.getElementById('d-val').innerText = "ALERT";
+            } else {
+                distCard.classList.remove('alarm-active');
+                document.getElementById('d-val').innerText = "OK";
+            }
+        });
     </script>
 </body>
+</html>
