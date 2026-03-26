@@ -5,7 +5,7 @@
 }
 
 body {
-    background: linear-gradient(145deg, #1dac97, #0a2833);
+    background: linear-gradient(145deg, #1dac84, #0a2833);
     font-family: system-ui, -apple-system, sans-serif;
     color: #e4f0fa;
     min-height: 100vh;
@@ -46,7 +46,6 @@ body::before {
     will-change: transform, opacity;
 }
 
-/* Vertical bar */
 .cross::before {
     content: '';
     position: absolute;
@@ -58,7 +57,6 @@ body::before {
     top: 0;
 }
 
-/* Horizontal bar */
 .cross::after {
     content: '';
     position: absolute;
@@ -90,13 +88,14 @@ body::before {
     }
 }
 
-/* ── Rest of existing styles ── */
+/* ── Layout ── */
 .container {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
     width: 100%;
+    max-width: 860px;
     position: relative;
     z-index: 1;
 }
@@ -105,9 +104,23 @@ body::before {
     text-align: center;
 }
 
+.cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+/* On small screens — stack to single column */
+@media (max-width: 540px) {
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .header h1 {
     font-size: 2.5rem;
-    background: linear-gradient(135deg, #fff, #a0ffec, #fff);
+    background: linear-gradient(135deg, #fff, #a0ffc6, #fff);
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
@@ -125,7 +138,7 @@ body::before {
 .header p {
     font-size: 1rem;
     font-weight: 500;
-    background: linear-gradient(90deg, #fff, #a0ffdf, #fff);
+    background: linear-gradient(90deg, #fff, #a0ffc0, #fff);
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
@@ -142,7 +155,6 @@ body::before {
     align-items: center;
     gap: 1rem;
     width: 100%;
-    max-width: 400px;
     transition: all 0.2s ease;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
