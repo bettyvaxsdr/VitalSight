@@ -29,4 +29,33 @@
             <div class="value" id="d-val" style="font-size: 1.5rem;">OK</div>
         </div>
     </div>
+
+    <script>
+        //const IP = bakend
+
+        async function update() {
+            try {
+                const res = await fetch(`http://${IP}:5000/api/status`);
+                const data = await res.json();
+                document.getElementById('t-val').innerText = data.temp;
+                document.getElementById('b-val').innerText = data.beat;
+                const alarmCard = document.getElementById('alarm-card');
+                if (data.alarm || data.temp < 20) {
+                    alarmCard.classList.add('alarm-active');
+                    document.getElementById('a-val').innerText = "DANGER";
+                } else {
+                    alarmCard.classList.remove('alarm-active');
+                    document.getElementById('a-val').innerText = "CLEAR";
+                }
+                if (data.alarm || data.beat < 20) {
+                    alarmCard.classList.add('alarm-active');
+                    document.getElementById('a-val').innerText = "DANGER";
+                } else {
+                    alarmCard.classList.remove('alarm-active');
+                    document.getElementById('a-val').innerText = "CLEAR";
+                }
+            } catch (e) { console.log("Waiting for data..."); }
+        }
+        setInterval(update, 1000);
+    </script>
 </body>
