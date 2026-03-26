@@ -1,12 +1,19 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import database as db
+from flask import Flask, request, jsonify, render_template
+from backend import db, socketio
+from backend.database import init_db
+from backend.models import HealthData
 from datetime import datetime
-from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
-CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://user:password@localhost/dbname'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+init_db(app)
+socketio.init_app(app, cors_allowed_origins="*")
+
+@app.route('/')
+def index():
+    return render_template('home.html')
 
 @app.route('/api/data', methods=['POST'])
 def receive_data():
@@ -19,22 +26,25 @@ def receive_data():
     state = data.get('state')
     timestamp = datetime.now()
 
-    db.execute('INSERT INTO health_data (heart_rate, temperature, state, timestamp) VALUES (%s, %s, %s, %s)', (pulse, temperature, state, timestamp))
-    db.commit()
+    entry = HealthData(
+        heart_rate=pulse,
+        temperature=temperature,
+        state=state,
+        timestamp=timestamp
+    )
 
-    socketio.emit('new data',
+    db.session.add(entry)
+    db.session.commit()
+
+    socketio.emit('new_data',
                   {
                     'heart_rate': pulse,
                     'temperature': temperature,
                     'state': state,
-                    'timestamp': timestamp.strftime('%d-%m-%Y %H:%M:%S')
+                    'timestamp': str(datetime.utcnow())
                   })
 
     return {"status": "success"}
-
-@socketio.on('connect')
-def handle_connect():
-    print("Client connected")
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
