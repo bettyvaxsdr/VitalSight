@@ -1,3 +1,113 @@
+/* <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalSight</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+
+    <!-- Floating health crosses -->
+    <div class="crosses-bg" aria-hidden="true">
+        <div class="cross" style="--x:8%;  --delay:0s;   --dur:14s; --size:1.4rem; --op:0.13;"></div>
+        <div class="cross" style="--x:18%; --delay:2s;   --dur:18s; --size:2rem;   --op:0.09;"></div>
+        <div class="cross" style="--x:30%; --delay:5s;   --dur:12s; --size:1rem;   --op:0.17;"></div>
+        <div class="cross" style="--x:42%; --delay:1s;   --dur:20s; --size:2.4rem; --op:0.07;"></div>
+        <div class="cross" style="--x:55%; --delay:7s;   --dur:15s; --size:1.2rem; --op:0.14;"></div>
+        <div class="cross" style="--x:65%; --delay:3s;   --dur:17s; --size:1.8rem; --op:0.10;"></div>
+        <div class="cross" style="--x:75%; --delay:9s;   --dur:13s; --size:0.9rem; --op:0.18;"></div>
+        <div class="cross" style="--x:85%; --delay:4s;   --dur:22s; --size:2.8rem; --op:0.06;"></div>
+        <div class="cross" style="--x:92%; --delay:6s;   --dur:16s; --size:1.5rem; --op:0.12;"></div>
+        <div class="cross" style="--x:3%;  --delay:11s;  --dur:19s; --size:2.2rem; --op:0.08;"></div>
+        <div class="cross" style="--x:48%; --delay:8s;   --dur:11s; --size:1.1rem; --op:0.15;"></div>
+        <div class="cross" style="--x:22%; --delay:13s;  --dur:24s; --size:3rem;   --op:0.05;"></div>
+        <div class="cross" style="--x:70%; --delay:0.5s; --dur:13s; --size:1.3rem; --op:0.13;"></div>
+        <div class="cross" style="--x:37%; --delay:15s;  --dur:18s; --size:1.7rem; --op:0.10;"></div>
+        <div class="cross" style="--x:58%; --delay:10s;  --dur:21s; --size:0.8rem; --op:0.20;"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to VitalSight!</h1>
+            <p>Check the vital parameters of your loved ones with ease.</p>
+        </div>
+        <div class="cards-grid">
+            <div class="card">
+                <div><i class="fas fa-thermometer-half"></i> TEMP</div>
+                <div class="value" id="t-val">--</div><span>°C</span>
+            </div>
+            <div class="card" id="beat-card">
+                <div><i class="fas fa-heartbeat"></i> PULSE</div>
+                <div class="value" id="b-val">--</div><span>bpm</span>
+            </div>
+            <div class="card" id="alarm-card">
+                <div><i class="fas fa-exclamation-triangle"></i> VITAL STATUS</div>
+                <div class="value" id="a-val" style="font-size: 1.5rem;">OK</div>
+            </div>
+            <div class="card" id="dist-card">
+                <div><i class="fas fa-exclamation-triangle"></i> MOVEMENT STATUS</div>
+                <div class="value" id="d-val" style="font-size: 1.5rem;">OK</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="calendar">
+        <div class ="block">
+            <button id="prevBtn">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="monthYear" id="monthYear"></div>
+            <button id="nextBtn">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="days">
+            <div class="day">Mon</div>
+            <div class="day">Tue</div>
+            <div class="day">Wed</div>
+            <div class="day">Thu</div>
+            <div class="day">Fri</div>
+            <div class="day">Sat</div>
+            <div class="day">Sun</div>
+        </div>
+        <div class="dates" id="dates"></div>
+    </div>
+
+    <script>
+        const socket = io("http://localhost:5000");
+
+        socket.on('connect', () => {
+            console.log("Connected to server");
+        });
+
+        socket.on('new_data', (data) => {
+            document.getElementById('t-val').innerText = data.temperature;
+            document.getElementById('b-val').innerText = data.pulse;
+            const alarmCard = document.getElementById('alarm-card');
+            if (data.alarm || data.temperature < 20 || data.pulse < 20) {
+                alarmCard.classList.add('alarm-active');
+                document.getElementById('a-val').innerText = "DANGER";
+            } else {
+                alarmCard.classList.remove('alarm-active');
+                document.getElementById('a-val').innerText = "CLEAR";
+            }
+            const distCard = document.getElementById('dist-card');
+            if (data.movement_alert) {
+                distCard.classList.add('alarm-active');
+                document.getElementById('d-val').innerText = "ALERT";
+            } else {
+                distCard.classList.remove('alarm-active');
+                document.getElementById('d-val').innerText = "OK";
+            }
+        });
+    </script>
+</body>
+</html> */
+
+
 * {
     margin: 0;
     padding: 0;
@@ -177,4 +287,58 @@ body::before {
 .card i {
     font-size: 1.5rem;
     opacity: 0.9;
+}
+
+.calendar {
+    margin-top: 30rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    padding: 1rem;
+    border-radius: 1rem;
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.block {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    background: #1dac84;
+    border: none;
+    border-radius: 50%;
+    color: #0be947;
+    font-size: 1.2rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    padding: 0.5rem;
+    transition: color 0.2s ease;
+}
+
+.button:hover {
+    color: #0ffb5c;
+}
+
+.monthYear {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.day {
+    text-align: center;
+    font-weight: 500;
+    opacity: 0.7;
+    margin-bottom: 0.5rem;
 }
