@@ -49,8 +49,15 @@ body::before {
 }
 
 .header p {
-    opacity: 0.85;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #fff, #c0e0ff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 20px rgba(255,255,255,0.3);
+    letter-spacing: 0.3px;
+    margin-top: 0.5rem;
 }
 
 .card {
