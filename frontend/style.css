@@ -292,38 +292,3 @@ body::before {
     background: #159a74;
     transform: scale(1.05);
 }
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-    .cards-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .calendar {
-        max-width: 100%;
-        padding: 1rem;
-    }
-    
-    .date-cell {
-        padding: 0.4rem 0.2rem;
-        font-size: 0.8rem;
-    }
-    
-    .day {
-        font-size: 0.75rem;
-        padding: 0.3rem;
-    }
-    
-    .monthYear {
-        font-size: 1.1rem;
-    }
-    
-    .card {
-        padding: 0.75rem 1.5rem;
-    }
-    
-    .value {
-        font-size: 1.5rem;
-    }
-}

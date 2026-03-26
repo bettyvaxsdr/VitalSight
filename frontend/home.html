@@ -104,7 +104,6 @@
             }
         });
 
-        // ==================== CALENDAR (fully functional) ====================
         const monthYearElement = document.getElementById('monthYear');
         const datesElement = document.getElementById('dates');
         const prevBtn = document.getElementById('prevBtn');
@@ -112,7 +111,6 @@
         
         let currentDate = new Date();
         
-        // Month names in English
         const monthsEN = [
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
@@ -122,27 +120,15 @@
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
             
-            // First day of the month
             const firstDayOfMonth = new Date(year, month, 1);
-            // Last day of the month
             const lastDayOfMonth = new Date(year, month + 1, 0);
             
             const totalDays = lastDayOfMonth.getDate();
-            
-            // Get index of first day (Monday = 0, Sunday = 6)
-            // getDay(): 0 = Sunday, 1 = Monday ... 6 = Saturday
-            // We want Monday to be 0, so we adjust
             let firstDayIndex = firstDayOfMonth.getDay();
-            if (firstDayIndex === 0) firstDayIndex = 7; // Sunday becomes 7
-            firstDayIndex = firstDayIndex - 1; // Monday = 0, Sunday = 6
-            
-            // Days from previous month
+            if (firstDayIndex === 0) firstDayIndex = 7;
+            firstDayIndex = firstDayIndex - 1;
             const prevMonthLastDate = new Date(year, month, 0).getDate();
-            
-            // Total cells (6 rows * 7 days = 42)
             const totalCells = 42;
-            
-            // Generate HTML
             let datesHTML = '';
             
             for (let i = 0; i < totalCells; i++) {
@@ -152,7 +138,6 @@
                 let isCurrentMonth = true;
                 
                 if (cellDate <= 0) {
-                    // Days from previous month
                     isCurrentMonth = false;
                     displayMonth = month - 1;
                     if (displayMonth < 0) {
@@ -161,7 +146,6 @@
                     }
                     cellDate = prevMonthLastDate + cellDate;
                 } else if (cellDate > totalDays) {
-                    // Days from next month
                     isCurrentMonth = false;
                     displayMonth = month + 1;
                     if (displayMonth > 11) {
@@ -170,33 +154,27 @@
                     }
                     cellDate = cellDate - totalDays;
                 }
-                
-                // Check if today
+
                 const today = new Date();
                 const isToday = (displayYear === today.getFullYear() && 
                                  displayMonth === today.getMonth() && 
                                  cellDate === today.getDate());
                 
-                // CSS classes for styling (preserves your existing CSS)
                 let additionalClass = '';
                 if (!isCurrentMonth) additionalClass = 'other-month';
                 if (isToday) additionalClass += ' today';
                 
                 datesHTML += `<div class="date-cell ${additionalClass}" data-year="${displayYear}" data-month="${displayMonth}" data-day="${cellDate}">${cellDate}</div>`;
             }
-            
-            // Update header
             monthYearElement.innerText = `${monthsEN[month]} ${year}`;
             datesElement.innerHTML = datesHTML;
-            
-            // Add click event listeners to all date cells
+
             document.querySelectorAll('.date-cell').forEach(cell => {
                 cell.addEventListener('click', () => {
                     const year = cell.dataset.year;
                     const month = cell.dataset.month;
                     const day = cell.dataset.day;
                     console.log(`Selected date: ${day}/${parseInt(month)+1}/${year}`);
-                    // You can add your own logic here, e.g., load vital data for this date
                 });
             });
         }
@@ -210,12 +188,8 @@
             currentDate.setMonth(currentDate.getMonth() + 1);
             renderCalendar();
         }
-        
-        // Attach button events
         prevBtn.addEventListener('click', prevMonth);
         nextBtn.addEventListener('click', nextMonth);
-        
-        // Initialize calendar
         renderCalendar();
     </script>
 </body>
