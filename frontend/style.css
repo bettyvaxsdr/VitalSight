@@ -111,13 +111,6 @@ body::before {
     width: 100%;
 }
 
-/* On small screens — stack to single column */
-@media (max-width: 540px) {
-    .cards-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 .header h1 {
     font-size: 2.5rem;
     background: linear-gradient(135deg, #fff, #a0ffc6, #fff);
