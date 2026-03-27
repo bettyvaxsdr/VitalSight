@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VitalSight</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="../static/style.css">
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 </head>
 <body>
 
-    <!-- Floating health crosses -->
     <div class="crosses-bg" aria-hidden="true">
         <div class="cross" style="--x:8%;  --delay:0s;   --dur:14s; --size:1.4rem; --op:0.13;"></div>
         <div class="cross" style="--x:18%; --delay:2s;   --dur:18s; --size:2rem;   --op:0.09;"></div>
@@ -33,6 +32,7 @@
         <div class="header">
             <h1>Welcome to VitalSight!</h1>
             <p>Check the vital parameters of your loved ones with ease.</p>
+            <button onclick="handleLogout()" style="margin-top:1rem;">Logout</button>
         </div>
         <div class="cards-grid">
             <div class="card">
@@ -55,14 +55,10 @@
     </div>
 
     <div class="calendar">
-        <div class ="block">
-            <button id="prevBtn">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
+        <div class="block">
+            <button id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
             <div class="monthYear" id="monthYear"></div>
-            <button id="nextBtn">
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
+            <button id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
         <div class="days">
             <div class="day">Mon</div>
@@ -77,15 +73,27 @@
     </div>
 
     <script>
-        const socket = io("http://localhost:5000");
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        const socket = io("http://localhost:5000", {
+            auth: { token: token }
+        });
 
         socket.on('connect', () => {
             console.log("Connected to server");
         });
 
+        socket.on('connect_error', (err) => {
+            console.error("Socket connection error:", err.message);
+        });
+
         socket.on('new_data', (data) => {
-            document.getElementById('t-val').innerText = data.temperature;
-            document.getElementById('b-val').innerText = data.pulse;
+            document.getElementById('t-val').innerText = data.temperature ?? '--';
+            document.getElementById('b-val').innerText = data.pulse ?? '--';
+
             const alarmCard = document.getElementById('alarm-card');
             if (data.alarm || data.temperature < 20 || data.pulse < 20) {
                 alarmCard.classList.add('alarm-active');
@@ -94,8 +102,9 @@
                 alarmCard.classList.remove('alarm-active');
                 document.getElementById('a-val').innerText = "CLEAR";
             }
+
             const distCard = document.getElementById('dist-card');
-            if (data.movement_alert) {
+            if (data.movement) {
                 distCard.classList.add('alarm-active');
                 document.getElementById('d-val').innerText = "ALERT";
             } else {
@@ -104,92 +113,83 @@
             }
         });
 
+        function handleLogout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
         const monthYearElement = document.getElementById('monthYear');
-        const datesElement = document.getElementById('dates');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        
+        const datesElement     = document.getElementById('dates');
+        const prevBtn          = document.getElementById('prevBtn');
+        const nextBtn          = document.getElementById('nextBtn');
+
         let currentDate = new Date();
-        
+
         const monthsEN = [
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
         ];
-        
+
         function renderCalendar() {
-            const year = currentDate.getFullYear();
+            const year  = currentDate.getFullYear();
             const month = currentDate.getMonth();
-            
-            const firstDayOfMonth = new Date(year, month, 1);
-            const lastDayOfMonth = new Date(year, month + 1, 0);
-            
-            const totalDays = lastDayOfMonth.getDate();
+
+            const firstDayOfMonth   = new Date(year, month, 1);
+            const lastDayOfMonth    = new Date(year, month + 1, 0);
+            const totalDays         = lastDayOfMonth.getDate();
+            const prevMonthLastDate = new Date(year, month, 0).getDate();
+
             let firstDayIndex = firstDayOfMonth.getDay();
             if (firstDayIndex === 0) firstDayIndex = 7;
-            firstDayIndex = firstDayIndex - 1;
-            const prevMonthLastDate = new Date(year, month, 0).getDate();
-            const totalCells = 42;
+            firstDayIndex -= 1;
+
             let datesHTML = '';
-            
-            for (let i = 0; i < totalCells; i++) {
-                let cellDate = i - firstDayIndex + 1;
+
+            for (let i = 0; i < 42; i++) {
+                let cellDate     = i - firstDayIndex + 1;
                 let displayMonth = month;
-                let displayYear = year;
+                let displayYear  = year;
                 let isCurrentMonth = true;
-                
+
                 if (cellDate <= 0) {
                     isCurrentMonth = false;
                     displayMonth = month - 1;
-                    if (displayMonth < 0) {
-                        displayMonth = 11;
-                        displayYear = year - 1;
-                    }
+                    if (displayMonth < 0) { displayMonth = 11; displayYear = year - 1; }
                     cellDate = prevMonthLastDate + cellDate;
                 } else if (cellDate > totalDays) {
                     isCurrentMonth = false;
                     displayMonth = month + 1;
-                    if (displayMonth > 11) {
-                        displayMonth = 0;
-                        displayYear = year + 1;
-                    }
+                    if (displayMonth > 11) { displayMonth = 0; displayYear = year + 1; }
                     cellDate = cellDate - totalDays;
                 }
 
-                const today = new Date();
-                const isToday = (displayYear === today.getFullYear() && 
-                                 displayMonth === today.getMonth() && 
-                                 cellDate === today.getDate());
-                
-                let additionalClass = '';
-                if (!isCurrentMonth) additionalClass = 'other-month';
-                if (isToday) additionalClass += ' today';
-                
-                datesHTML += `<div class="date-cell ${additionalClass}" data-year="${displayYear}" data-month="${displayMonth}" data-day="${cellDate}">${cellDate}</div>`;
+                const today   = new Date();
+                const isToday = (displayYear  === today.getFullYear() &&
+                                 displayMonth === today.getMonth()    &&
+                                 cellDate     === today.getDate());
+
+                let cls = '';
+                if (!isCurrentMonth) cls += ' other-month';
+                if (isToday)         cls += ' today';
+
+                datesHTML += `<div class="date-cell${cls}" data-year="${displayYear}" data-month="${displayMonth}" data-day="${cellDate}">${cellDate}</div>`;
             }
+
             monthYearElement.innerText = `${monthsEN[month]} ${year}`;
-            datesElement.innerHTML = datesHTML;
+            datesElement.innerHTML     = datesHTML;
 
             document.querySelectorAll('.date-cell').forEach(cell => {
                 cell.addEventListener('click', () => {
-                    const year = cell.dataset.year;
-                    const month = cell.dataset.month;
-                    const day = cell.dataset.day;
-                    console.log(`Selected date: ${day}/${parseInt(month)+1}/${year}`);
+                    const y = cell.dataset.year;
+                    const m = cell.dataset.month;
+                    const d = cell.dataset.day;
+                    console.log(`Selected date: ${d}/${parseInt(m)+1}/${y}`);
                 });
             });
         }
-        
-        function prevMonth() {
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            renderCalendar();
-        }
-        
-        function nextMonth() {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            renderCalendar();
-        }
-        prevBtn.addEventListener('click', prevMonth);
-        nextBtn.addEventListener('click', nextMonth);
+
+        prevBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); });
+        nextBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
         renderCalendar();
     </script>
 </body>
