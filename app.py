@@ -47,20 +47,6 @@ def get_status():
             "message": str(e)
         }), 500
 
-@app.route('/history/<int:id>', methods=['GET'])
-def history(id):
-    data = HealthData.query.filter_by(id=id).first()
-    if not data:
-        return jsonify({"message": "No data found."}), 404
-    return jsonify({
-        "id":          data.id,
-        "timestamp":   data.timestamp.isoformat(),
-        "pulse":       data.pulse,
-        "temperature": data.temperature,
-        "movement":    data.movement,
-        "state":       data.state,
-        "device_id":   data.device_id
-    })
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
