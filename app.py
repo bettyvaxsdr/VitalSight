@@ -1,79 +1,77 @@
-from flask import Flask, request, jsonify, render_template
-from backend import db
-from backend.database import init_db
-from backend.models import HealthData
-from datetime import datetime
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///health_data.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db.init_app(app)
-
-ESP32_IP = "http://192.168.8.75"
-
-
+from flask import jsonify, render_template
+from flask_login import login_required, current_user
+from website.__init__ import create_app, db
+from website.models import HealthData
+import requests
+ 
+app = create_app()
+ 
+ESP32_IP = "192.168.8.75"
+ 
 @app.route('/')
+@login_required                      
 def index():
-    return render_template('home.html')
-
-@app.route('/get-sensor-data', methods=['GET'])
-def get_data():
+    return render_template('home.html', user=current_user)
+ 
+@app.route('/login')
+def login_page():
+    return render_template('login.html')
+ 
+@app.route('/signup')
+def signup_page():
+    return render_template('signup.html')
+ 
+@app.route('/api/status')
+@login_required
+def get_status():
     try:
-        # We send a GET request to the ESP32's '/data' endpoint
-        response = request.get(f"{ESP32_IP}/data", timeout=5)
-        
-        if response.status_code == 200:
-            # The ESP32 returns a JSON or string; we pass it along
-            sensor_payload = response.json()
-            return jsonify({
-                "status": "success",
-                "device": "ESP32_Node_01",
-                "data": sensor_payload
-            }), 200
-        else:
-            return jsonify({"error": "ESP32 returned an error"}), 502
-            
-    except request.exceptions.RequestException as e:
-        return jsonify({"error": f"Could not connect to ESP32: {str(e)}"}), 504
+        res  = requests.get(f"http://{ESP32_IP}/data", timeout=2)  # fixed: requests.get not request.get
+        data = res.json()
+ 
+        pulse       = data.get("pulse")
+        temperature = data.get("temperature")
+        movement    = data.get("movement")
+        state       = data.get("state")
+ 
+        alarm = False
+        if pulse       is not None and (pulse < 40 or pulse > 120):
+            alarm = True
+        if temperature is not None and (temperature < 35 or temperature > 38):
+            alarm = True
+        if movement:
+            alarm = True
+ 
+        return jsonify({
+            "pulse":       pulse,
+            "temperature": temperature,
+            "movement":    movement,
+            "state":       state,
+            "alarm":       alarm
+        })
+ 
+    except Exception as e:
+        return jsonify({
+            "error":   "ESP32 not reachable",
+            "message": str(e)
+        }), 500
+ 
 
-@app.route('/history/<id>', methods=['GET'])
+ 
+@app.route('/history/<int:id>', methods=['GET'])   # fixed: use <int:id> for type safety
 def history(id):
     data = HealthData.query.filter_by(id=id).first()
     if not data:
-        return jsonify({"error": "Data not found"}), 404
-    
-    return render_template('history.html', data=data)    
-
+        return jsonify({"message": "No data found."}), 404
+    return jsonify({
+        "id":          data.id,
+        "timestamp":   data.timestamp.isoformat(),
+        "pulse":       data.pulse,
+        "temperature": data.temperature,
+        "movement":    data.movement,
+        "state":       data.state,
+        "device_id":   data.device_id
+    })
+ 
+ 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
-
-@app.route('/api/data', methods=['POST'])
-def receive_data():
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "No data received"}), 400
-    
-    pulse = data.get('pulse')
-    temperature = data.get('temperature')
-    state = data.get('state')
-
-    entry = HealthData(
-        pulse = pulse,
-        temperature = temperature,
-        state = state,
-    )
-
-    db.session.add(entry)
-    db.session.commit()
-
-    socketio.emit('new_data',
-                  {
-                    'pulse': pulse,
-                    'temperature': temperature,
-                    'state': state
-                  })
-
-    return {"status": "success"}
-
-if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000)
+    app.run(debug=True, port=5000)
