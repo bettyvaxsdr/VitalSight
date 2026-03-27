@@ -29,11 +29,7 @@ def login_page():
     login_user(user, remember=True)
     return jsonify({'message': 'Logged in successfully.'}), 200
 
-@auth.route('/signup', methods=['GET'])
-def signup_page():
-    return render_template('signup.html')
-
-@auth.route('/register', methods=['POST'])
+@auth.route('/signup', methods=['POST'])
 def register():
     data = request.get_json()
     username = data.get('username', '').strip()
