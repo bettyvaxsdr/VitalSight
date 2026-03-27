@@ -2,7 +2,7 @@ from flask import jsonify, render_template
 from flask_login import login_required, current_user
 from website import create_app, db
 import requests
-import motion_detector
+#import motion_detector
 
 app = create_app()
 ESP32_IP = "192.168.8.75"
@@ -16,7 +16,7 @@ def get_status():
 
         pulse       = data.get("bpm")
         temperature = data.get("value")
-        movement    = motion_detector.get_movement_status()  # ← от OpenCV
+        #movement    = motion_detector.get_movement_status()  # ← от OpenCV
 
         alarm = False
         if pulse is not None and isinstance(pulse, (int, float)):
@@ -24,13 +24,13 @@ def get_status():
                 alarm = True
         if temperature is not None and (temperature < 35 or temperature > 38):
             alarm = True
-        if movement:
-            alarm = True  # липса на движение = alarm
+        # if movement:
+        #     alarm = True  # липса на движение = alarm
 
         return jsonify({
             "pulse":       pulse,
             "temperature": temperature,
-            "movement":    movement,
+            # "movement":    movement,
             "alarm":       alarm
         })
 
