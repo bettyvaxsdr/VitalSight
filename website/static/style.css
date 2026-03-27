@@ -179,116 +179,30 @@ body::before {
     opacity: 0.9;
 }
 
-.calendar {
-    margin-top: 2rem;
+button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.6rem 1.4rem;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(4px);
-    padding: 1.5rem;
-    border-radius: 1.5rem;
-    width: 100%;
-    max-width: 500px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-}
-
-.calendar:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.block {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-}
-
-#prevBtn, #nextBtn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
     color: #e4f0fa;
-    font-size: 1.2rem;
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-#prevBtn:hover, #nextBtn:hover {
-    background: #1dac84;
-    color: white;
-    transform: scale(1.05);
-}
-
-.monthYear {
-    font-size: 1.3rem;
-    font-weight: 600;
-    text-align: center;
-    letter-spacing: 1px;
-}
-
-.days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    margin-bottom: 0.5rem;
-}
-
-.day {
-    text-align: center;
-    font-weight: 600;
-    opacity: 0.8;
-    margin-bottom: 0.75rem;
-    font-size: 0.9rem;
-    padding: 0.5rem;
-}
-
-.dates {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0.25rem;
-}
-
-.date-cell {
-    text-align: center;
-    padding: 0.6rem 0.3rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
     font-size: 0.9rem;
     font-weight: 500;
-    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: all 0.2s ease;
 }
 
-.date-cell:hover {
-    background: rgba(29, 172, 132, 0.6);
-    transform: scale(1.05);
+button:hover {
+    background: rgba(255, 80, 80, 0.2);
+    border-color: rgba(255, 80, 80, 0.3);
+    color: #ff6b6b;
+    transform: scale(1.01);
 }
 
-/* Days from previous/next month */
-.date-cell.other-month {
-    opacity: 0.4;
-    background: rgba(255, 255, 255, 0.02);
-}
-
-.date-cell.other-month:hover {
-    opacity: 0.7;
-    background: rgba(29, 172, 132, 0.4);
-}
-
-/* Today highlight */
-.date-cell.today {
-    background: #1dac84;
-    color: white;
-    font-weight: bold;
-    box-shadow: 0 0 10px rgba(29, 172, 132, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.date-cell.today:hover {
-    background: #159a74;
-    transform: scale(1.05);
+button:active {
+    transform: scale(0.98);
 }
