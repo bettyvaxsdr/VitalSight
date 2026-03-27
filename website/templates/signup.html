@@ -70,57 +70,58 @@
     </div>
 
     <script>
-        async function handleRegister() {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const confirm  = document.getElementById('confirm-password').value;
-            const errorMsg   = document.getElementById('error-msg');
-            const successMsg = document.getElementById('success-msg');
+    async function handleRegister() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const confirm  = document.getElementById('confirm-password').value;
+        const deviceId = document.getElementById('device-id').value.trim();
+        const errorMsg   = document.getElementById('error-msg');
+        const successMsg = document.getElementById('success-msg');
 
-            errorMsg.textContent   = '';
-            successMsg.textContent = '';
+        errorMsg.textContent   = '';
+        successMsg.textContent = '';
 
-            if (!username || !password || !confirm) {
-                errorMsg.textContent = 'Please fill in all fields.'; return;
-            }
-            if (password !== confirm) {
-                errorMsg.textContent = 'Passwords do not match.'; return;
-            }
-            if (password.length < 6) {
-                errorMsg.textContent = 'Password must be at least 6 characters.'; return;
-            }
-
-            setLoading(true);
-            try {
-                const response = await fetch('http://localhost:5000/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    successMsg.textContent = 'Account created! Redirecting to login…';
-                    setTimeout(() => window.location.href = 'login.html', 1500);
-                } else {
-                    errorMsg.textContent = data.message || 'Registration failed.';
-                }
-            } catch {
-                errorMsg.textContent = 'Cannot reach server. Is it running?';
-            } finally {
-                setLoading(false);
-            }
+        if (!username || !password || !confirm || !deviceId) {
+            errorMsg.textContent = 'Please fill in all fields.'; return;
+        }
+        if (password !== confirm) {
+            errorMsg.textContent = 'Passwords do not match.'; return;
+        }
+        if (password.length < 6) {
+            errorMsg.textContent = 'Password must be at least 6 characters.'; return;
         }
 
-        function setLoading(on) {
-            const btn = document.getElementById('signup-btn');
-            document.getElementById('btn-text').style.display   = on ? 'none'         : 'inline';
-            document.getElementById('btn-spinner').style.display = on ? 'inline-block' : 'none';
-            btn.disabled = on;
+        setLoading(true);
+        try {
+            const response = await fetch('http://localhost:5000/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, device_id: deviceId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                successMsg.textContent = 'Account created! Redirecting to login…';
+                setTimeout(() => window.location.href = 'login.html', 1500);
+            } else {
+                errorMsg.textContent = data.message || 'Registration failed.';
+            }
+        } catch {
+            errorMsg.textContent = 'Cannot reach server. Is it running?';
+        } finally {
+            setLoading(false);
         }
+    }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') handleRegister();
-        });
-    </script>
+    function setLoading(on) {
+        const btn = document.getElementById('signup-btn');
+        document.getElementById('btn-text').style.display    = on ? 'none'         : 'inline';
+        document.getElementById('btn-spinner').style.display = on ? 'inline-block' : 'none';
+        btn.disabled = on;
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleRegister();
+    });
+</script>
 </body>
 </html>
