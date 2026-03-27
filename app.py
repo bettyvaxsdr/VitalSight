@@ -9,8 +9,9 @@ app = create_app()
 ESP32_IP = "192.168.8.75"
 
 @app.route('/')
-@login_required                      
 def index():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_page'))
     return render_template('home.html', user=current_user)
 
 @app.route('/login')
