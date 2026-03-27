@@ -12,6 +12,7 @@
 <body>
 
     <div class="crosses-bg" aria-hidden="true">
+        <!-- crosses animation (остава същото) -->
         <div class="cross" style="--x:8%;  --delay:0s;   --dur:14s; --size:1.4rem; --op:0.13;"></div>
         <div class="cross" style="--x:18%; --delay:2s;   --dur:18s; --size:2rem;   --op:0.09;"></div>
         <div class="cross" style="--x:30%; --delay:5s;   --dur:12s; --size:1rem;   --op:0.17;"></div>
@@ -35,7 +36,6 @@
             <p>Check the vital parameters of your loved ones with ease.</p>
             <button onclick="handleLogout()" style="margin-top:1rem;">Logout</button>
         </div>
-
         <div class="cards-grid">
             <div class="card">
                 <div><i class="fas fa-thermometer-half"></i> TEMP</div>
@@ -47,30 +47,35 @@
             </div>
             <div class="card" id="alarm-card">
                 <div><i class="fas fa-exclamation-triangle"></i> VITAL STATUS</div>
-                <div class="value" id="a-val" style="font-size:1.5rem;">--</div>
+                <div class="value" id="a-val" style="font-size: 1.5rem;">OK</div>
             </div>
             <div class="card" id="dist-card">
                 <div><i class="fas fa-exclamation-triangle"></i> MOVEMENT STATUS</div>
-                <div class="value" id="d-val" style="font-size:1.5rem;">--</div>
+                <div class="value" id="d-val" style="font-size: 1.5rem;">OK</div>
             </div>
         </div>
     </div>
 
     <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // ============================
+        // Функция за fetch() обновяване
+        // ============================
         function fetchStatus() {
-            fetch("/api/status", { credentials: "include" })
-                .then(res => {
-                    if (res.status === 401) { window.location.href = '/login'; return; }
-                    return res.json();
-                })
+            fetch("/api/status")
+                .then(res => res.json())
                 .then(data => {
-                    if (!data || data.error) return;
+                    if (data.error) return console.error(data.error);
 
                     document.getElementById('t-val').innerText = data.temperature ?? '--';
                     document.getElementById('b-val').innerText = data.pulse ?? '--';
 
                     const alarmCard = document.getElementById('alarm-card');
-                    if (data.alarm) {
+                    if (data.alarm || data.temperature < 20 || data.pulse < 20) {
                         alarmCard.classList.add('alarm-active');
                         document.getElementById('a-val').innerText = "DANGER";
                     } else {
@@ -87,15 +92,16 @@
                         document.getElementById('d-val').innerText = "OK";
                     }
                 })
-                .catch(err => console.error("Status fetch error:", err));
+                .catch(err => console.error("Failed to fetch status:", err));
         }
 
+        // Обновяване на всеки 1 секунда
         setInterval(fetchStatus, 1000);
-        fetchStatus();
+        fetchStatus(); // извикваме веднага при зареждане
 
         function handleLogout() {
-            fetch("/logout", { credentials: "include" })
-                .then(() => window.location.href = '/login');
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
         }
     </script>
 </body>
