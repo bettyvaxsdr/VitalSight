@@ -1,5 +1,5 @@
-from backend import db  
-from backend.models import HealthData 
+from website import db  
+from website.models import HealthData 
   
 def init_db(app):  
     db.init_app(app)  

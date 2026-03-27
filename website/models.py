@@ -1,4 +1,4 @@
-from backend import db
+from website import db
 from datetime import datetime
 
 class HealthData(db.Model):
