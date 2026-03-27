@@ -1,6 +1,6 @@
 from flask import jsonify, render_template
 from flask_login import login_required, current_user
-from website.__init__ import create_app, db
+from website import create_app, db
 from website.models import HealthData
 import requests
  

@@ -77,8 +77,8 @@
                     body: JSON.stringify({ username, password })
                 });
                 const data = await response.json();
-                if (response.ok && data.token) {
-                    localStorage.setItem('token', data.token);
+                if (response.ok) {
+                    // login_user() вече е извикан в backend → session cookie
                     window.location.href = '/';
                 } else {
                     errorMsg.textContent = data.message || 'Invalid credentials.';

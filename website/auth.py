@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify, request
-from models import User
+from flask import Blueprint, jsonify, redirect, request, url_for
+from website.models import User
 from werkzeug.security import generate_password_hash, check_password_hash
-from __init__ import db
+from . import db
 from flask_login import login_user, login_required, logout_user, current_user
 import jwt
 import datetime
@@ -19,25 +19,80 @@ def make_token(user_id):
     return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
 
 
-@auth.route('/login', methods=['POST'])
+# @auth.route('/login', methods=['POST'])
+# def login():
+#     if request.is_json:
+#         data = request.get_json()
+#     else:
+#         data = request.form
+        
+#     username = data.get('username')
+#     password = data.get('password')
+
+#     if not username or not password:
+#         return jsonify({'message': 'Please fill in all fields.'}), 400
+
+#     user = User.query.filter_by(username=username).first()
+#     if not user:
+#         return jsonify({'message': 'User does not exist.'}), 401
+
+#     if not check_password_hash(user.password, password):
+#         return jsonify({'message': 'Incorrect password.'}), 401
+
+#     login_user(user, remember=True)
+
+#     if request.is_json:
+#         token = make_token(user.id)  
+#         return jsonify({'token': token, 'message': 'Logged in successfully.'}), 200
+#     else:
+#         return redirect(url_for('index'))
+
+
+@auth.route('/login', methods=['POST', 'GET'])
 def login():
-    data = request.get_json() or {}
-    username = data.get('username')
-    password = data.get('password')
+    # Ако е JSON (AJAX), вземаме данните от request.json
+    if request.is_json:
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
+    else:
+        # Ако е HTML form, вземаме данните от request.form
+        username = request.form.get('username')
+        password = request.form.get('password')
 
+    # Проверка за празни полета
     if not username or not password:
-        return jsonify({'message': 'Please fill in all fields.'}), 400
+        if request.is_json:
+            return jsonify({'message': 'Please fill in all fields.'}), 400
+        else:
+            return 'Please fill in all fields', 400
 
-    user = User.query.filter_by(email=username).first()
+    # Проверка за съществуващ потребител
+    user = User.query.filter_by(username=username).first()
     if not user:
-        return jsonify({'message': 'User does not exist.'}), 401
+        if request.is_json:
+            return jsonify({'message': 'User does not exist.'}), 401
+        else:
+            return 'User does not exist', 401
 
+    # Проверка на паролата
     if not check_password_hash(user.password, password):
-        return jsonify({'message': 'Incorrect password.'}), 401
+        if request.is_json:
+            return jsonify({'message': 'Incorrect password.'}), 401
+        else:
+            return 'Incorrect password', 401
 
+    # Логваме user с Flask-Login (session cookie)
     login_user(user, remember=True)
-    token = make_token(user.id)
-    return jsonify({'token': token, 'message': 'Logged in successfully.'}), 200
+
+    # Ако е JSON (AJAX), връщаме token + message
+    if request.is_json:
+        # Ако имаш JWT token функция
+        token = make_token(user.id)  # твоят JWT токен
+        return jsonify({'token': token, 'message': 'Logged in successfully.'}), 200
+    else:
+        # За класически HTML form redirect към home
+        return redirect(url_for('index'))
 
 
 @auth.route('/logout', methods=['POST'])
@@ -67,12 +122,12 @@ def register():
     if len(device_id) < 5:
         return jsonify({'message': 'Device ID must be at least 5 characters.'}), 400
 
-    existing = User.query.filter_by(email=username).first()
+    existing = User.query.filter_by(username=username).first()
     if existing:
         return jsonify({'message': 'Username already exists.'}), 409
 
     new_user = User(
-        email=username,
+        username=username,
         password=generate_password_hash(password, method='pbkdf2:sha256'),
         device_id=device_id
     )

@@ -1,4 +1,4 @@
-from website import db
+from . import db
 from datetime import datetime
 from flask_login import UserMixin
 
@@ -11,7 +11,7 @@ class HealthData(db.Model):
     state = db.Column(db.String(50))
     device_id = db.Column(db.String(50))
     
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), unique=True, nullable=False)
