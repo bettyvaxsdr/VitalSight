@@ -64,9 +64,7 @@
         // Функция за fetch() обновяване
         // ============================
         function fetchStatus() {
-            fetch("/api/status", {
-                headers: { 'Authorization': `Bearer ${token}` } // ако е нужно
-            })
+            fetch("/api/status")
             .then(res => res.json())
             .then(data => {
                 if (data.error) return console.error(data.error);
