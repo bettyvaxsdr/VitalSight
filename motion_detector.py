@@ -2,7 +2,7 @@ import cv2
 import time
 import threading
 
-STREAM_URL = "http://192.168.8.XX/stream"  # IP на ESP32-CAM
+STREAM_URL = "http://192.168.8.77/stream"  # IP на ESP32-CAM
 NO_MOTION_THRESHOLD = 10  # секунди без движение = alert
 
 _movement_detected = False
@@ -41,8 +41,6 @@ def run_detector():
         thresh   = cv2.dilate(thresh, None, iterations=2)
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL,
                                         cv2.CHAIN_APPROX_SIMPLE)
-
-        motion = any(cv2.contourArea(c) > 500 for c in contours)
 
         if motion:
             with _lock:
