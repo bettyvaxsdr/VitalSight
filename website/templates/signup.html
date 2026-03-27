@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitalSight — Login</title>
+    <title>VitalSight — Sign Up</title>
     <link rel="stylesheet" href="../static/style.css">
     <link rel="stylesheet" href="../static/login.css">
 </head>
@@ -31,57 +31,78 @@
             <div class="login-header">
                 <div class="logo-cross" aria-hidden="true"></div>
                 <h1>VitalSight</h1>
-                <p>Sign in to monitor your loved ones</p>
+                <p>Create your account</p>
             </div>
 
             <div class="input-group">
                 <label for="username">Username</label>
-                <input type="text" id="username" placeholder="Enter your username" autocomplete="username" />
+                <input type="text" id="username" placeholder="Choose a username" autocomplete="username" />
             </div>
 
             <div class="input-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" />
+                <input type="password" id="password" placeholder="Choose a password" autocomplete="new-password" />
+            </div>
+
+            <div class="input-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" placeholder="Repeat your password" autocomplete="new-password" />
+            </div>
+
+            <div class="input-group">
+                <label for="device-id">Device ID</label>
+                <input type="text" id="device-id" placeholder="Choose an Identification Number" autocomplete="username" />
             </div>
 
             <div class="error-msg" id="error-msg"></div>
+            <div class="success-msg" id="success-msg"></div>
 
-            <button class="login-btn" id="login-btn" onclick="handleLogin()">
-                <span id="btn-text">Sign In</span>
+            <button class="login-btn" id="signup-btn" onclick="handleRegister()">
+                <span id="btn-text">Create Account</span>
                 <span id="btn-spinner" class="spinner" style="display:none;"></span>
             </button>
 
             <div class="switch-hint">
-               <span>Don't have an account?</span>
-               <a href="signup.html" class="switch-link">Sign up</a>
+                <span>Already have an account?</span>
+                <a href="login.html" class="switch-link">Sign in</a>
             </div>
         </div>
     </div>
 
     <script>
-        async function handleLogin() {
+        async function handleRegister() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('error-msg');
+            const confirm  = document.getElementById('confirm-password').value;
+            const errorMsg   = document.getElementById('error-msg');
+            const successMsg = document.getElementById('success-msg');
 
-            errorMsg.textContent = '';
-            if (!username || !password) {
+            errorMsg.textContent   = '';
+            successMsg.textContent = '';
+
+            if (!username || !password || !confirm) {
                 errorMsg.textContent = 'Please fill in all fields.'; return;
+            }
+            if (password !== confirm) {
+                errorMsg.textContent = 'Passwords do not match.'; return;
+            }
+            if (password.length < 6) {
+                errorMsg.textContent = 'Password must be at least 6 characters.'; return;
             }
 
             setLoading(true);
             try {
-                const response = await fetch('http://localhost:5000/login', {
+                const response = await fetch('http://localhost:5000/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
                 const data = await response.json();
-                if (response.ok && data.token) {
-                    localStorage.setItem('token', data.token);
-                    window.location.href = 'index.html';
+                if (response.ok) {
+                    successMsg.textContent = 'Account created! Redirecting to login…';
+                    setTimeout(() => window.location.href = 'login.html', 1500);
                 } else {
-                    errorMsg.textContent = data.message || 'Invalid credentials.';
+                    errorMsg.textContent = data.message || 'Registration failed.';
                 }
             } catch {
                 errorMsg.textContent = 'Cannot reach server. Is it running?';
@@ -91,14 +112,14 @@
         }
 
         function setLoading(on) {
-            const btn = document.getElementById('login-btn');
+            const btn = document.getElementById('signup-btn');
             document.getElementById('btn-text').style.display   = on ? 'none'         : 'inline';
             document.getElementById('btn-spinner').style.display = on ? 'inline-block' : 'none';
             btn.disabled = on;
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') handleLogin();
+            if (e.key === 'Enter') handleRegister();
         });
     </script>
 </body>
