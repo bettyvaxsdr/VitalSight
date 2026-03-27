@@ -4,58 +4,193 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VitalSight</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 </head>
 <body>
+
+    <!-- Floating health crosses -->
+    <div class="crosses-bg" aria-hidden="true">
+        <div class="cross" style="--x:8%;  --delay:0s;   --dur:14s; --size:1.4rem; --op:0.13;"></div>
+        <div class="cross" style="--x:18%; --delay:2s;   --dur:18s; --size:2rem;   --op:0.09;"></div>
+        <div class="cross" style="--x:30%; --delay:5s;   --dur:12s; --size:1rem;   --op:0.17;"></div>
+        <div class="cross" style="--x:42%; --delay:1s;   --dur:20s; --size:2.4rem; --op:0.07;"></div>
+        <div class="cross" style="--x:55%; --delay:7s;   --dur:15s; --size:1.2rem; --op:0.14;"></div>
+        <div class="cross" style="--x:65%; --delay:3s;   --dur:17s; --size:1.8rem; --op:0.10;"></div>
+        <div class="cross" style="--x:75%; --delay:9s;   --dur:13s; --size:0.9rem; --op:0.18;"></div>
+        <div class="cross" style="--x:85%; --delay:4s;   --dur:22s; --size:2.8rem; --op:0.06;"></div>
+        <div class="cross" style="--x:92%; --delay:6s;   --dur:16s; --size:1.5rem; --op:0.12;"></div>
+        <div class="cross" style="--x:3%;  --delay:11s;  --dur:19s; --size:2.2rem; --op:0.08;"></div>
+        <div class="cross" style="--x:48%; --delay:8s;   --dur:11s; --size:1.1rem; --op:0.15;"></div>
+        <div class="cross" style="--x:22%; --delay:13s;  --dur:24s; --size:3rem;   --op:0.05;"></div>
+        <div class="cross" style="--x:70%; --delay:0.5s; --dur:13s; --size:1.3rem; --op:0.13;"></div>
+        <div class="cross" style="--x:37%; --delay:15s;  --dur:18s; --size:1.7rem; --op:0.10;"></div>
+        <div class="cross" style="--x:58%; --delay:10s;  --dur:21s; --size:0.8rem; --op:0.20;"></div>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1>Welcome to VitalSight!</h1>
-        <p>Check the vital parameters of your loved ones with ease.</p>
+            <p>Check the vital parameters of your loved ones with ease.</p>
         </div>
-        <div class="card">
-            <div><i class="fas fa-thermometer-half"></i> TEMP</div>
-            <div class="value" id="t-val">--</div><span>°C</span>
-        </div>
-        <div class="card" id="beat-card">
-            <div><i class="fas fa-heartbeat"></i> PULSE</div>
-            <div class="value" id="b-val">--</div><span>bpm</span>
-        </div>
-        <div class="card" id="alarm-card">
-            <div><i class="fas fa-exclamation-triangle"></i>VITAL STATUS</div>
-            <div class="value" id="a-val" style="font-size: 1.5rem;">OK</div>
-        </div>
-        <div class="card" id="dist-card">
-            <div><i class="fas fa-exclamation-triangle"></i> MOVEMENT STATUS</div>
-            <div class="value" id="d-val" style="font-size: 1.5rem;">OK</div>
+        <div class="cards-grid">
+            <div class="card">
+                <div><i class="fas fa-thermometer-half"></i> TEMP</div>
+                <div class="value" id="t-val">--</div><span>°C</span>
+            </div>
+            <div class="card" id="beat-card">
+                <div><i class="fas fa-heartbeat"></i> PULSE</div>
+                <div class="value" id="b-val">--</div><span>bpm</span>
+            </div>
+            <div class="card" id="alarm-card">
+                <div><i class="fas fa-exclamation-triangle"></i> VITAL STATUS</div>
+                <div class="value" id="a-val" style="font-size: 1.5rem;">OK</div>
+            </div>
+            <div class="card" id="dist-card">
+                <div><i class="fas fa-exclamation-triangle"></i> MOVEMENT STATUS</div>
+                <div class="value" id="d-val" style="font-size: 1.5rem;">OK</div>
+            </div>
         </div>
     </div>
 
-    <script>
-        //const IP = bakend
+    <div class="calendar">
+        <div class ="block">
+            <button id="prevBtn">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="monthYear" id="monthYear"></div>
+            <button id="nextBtn">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="days">
+            <div class="day">Mon</div>
+            <div class="day">Tue</div>
+            <div class="day">Wed</div>
+            <div class="day">Thu</div>
+            <div class="day">Fri</div>
+            <div class="day">Sat</div>
+            <div class="day">Sun</div>
+        </div>
+        <div class="dates" id="dates"></div>
+    </div>
 
-        async function update() {
-            try {
-                const res = await fetch(`http://${IP}:5000/api/status`);
-                const data = await res.json();
-                document.getElementById('t-val').innerText = data.temp;
-                document.getElementById('b-val').innerText = data.beat;
-                const alarmCard = document.getElementById('alarm-card');
-                if (data.alarm || data.temp < 20) {
-                    alarmCard.classList.add('alarm-active');
-                    document.getElementById('a-val').innerText = "DANGER";
-                } else {
-                    alarmCard.classList.remove('alarm-active');
-                    document.getElementById('a-val').innerText = "CLEAR";
+    <script>
+        const socket = io("http://localhost:5000");
+
+        socket.on('connect', () => {
+            console.log("Connected to server");
+        });
+
+        socket.on('new_data', (data) => {
+            document.getElementById('t-val').innerText = data.temperature;
+            document.getElementById('b-val').innerText = data.pulse;
+            const alarmCard = document.getElementById('alarm-card');
+            if (data.alarm || data.temperature < 20 || data.pulse < 20) {
+                alarmCard.classList.add('alarm-active');
+                document.getElementById('a-val').innerText = "DANGER";
+            } else {
+                alarmCard.classList.remove('alarm-active');
+                document.getElementById('a-val').innerText = "CLEAR";
+            }
+            const distCard = document.getElementById('dist-card');
+            if (data.movement_alert) {
+                distCard.classList.add('alarm-active');
+                document.getElementById('d-val').innerText = "ALERT";
+            } else {
+                distCard.classList.remove('alarm-active');
+                document.getElementById('d-val').innerText = "OK";
+            }
+        });
+
+        const monthYearElement = document.getElementById('monthYear');
+        const datesElement = document.getElementById('dates');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        let currentDate = new Date();
+        
+        const monthsEN = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            const firstDayOfMonth = new Date(year, month, 1);
+            const lastDayOfMonth = new Date(year, month + 1, 0);
+            
+            const totalDays = lastDayOfMonth.getDate();
+            let firstDayIndex = firstDayOfMonth.getDay();
+            if (firstDayIndex === 0) firstDayIndex = 7;
+            firstDayIndex = firstDayIndex - 1;
+            const prevMonthLastDate = new Date(year, month, 0).getDate();
+            const totalCells = 42;
+            let datesHTML = '';
+            
+            for (let i = 0; i < totalCells; i++) {
+                let cellDate = i - firstDayIndex + 1;
+                let displayMonth = month;
+                let displayYear = year;
+                let isCurrentMonth = true;
+                
+                if (cellDate <= 0) {
+                    isCurrentMonth = false;
+                    displayMonth = month - 1;
+                    if (displayMonth < 0) {
+                        displayMonth = 11;
+                        displayYear = year - 1;
+                    }
+                    cellDate = prevMonthLastDate + cellDate;
+                } else if (cellDate > totalDays) {
+                    isCurrentMonth = false;
+                    displayMonth = month + 1;
+                    if (displayMonth > 11) {
+                        displayMonth = 0;
+                        displayYear = year + 1;
+                    }
+                    cellDate = cellDate - totalDays;
                 }
-                if (data.alarm || data.beat < 20) {
-                    alarmCard.classList.add('alarm-active');
-                    document.getElementById('a-val').innerText = "DANGER";
-                } else {
-                    alarmCard.classList.remove('alarm-active');
-                    document.getElementById('a-val').innerText = "CLEAR";
-                }
-            } catch (e) { console.log("Waiting for data..."); }
+
+                const today = new Date();
+                const isToday = (displayYear === today.getFullYear() && 
+                                 displayMonth === today.getMonth() && 
+                                 cellDate === today.getDate());
+                
+                let additionalClass = '';
+                if (!isCurrentMonth) additionalClass = 'other-month';
+                if (isToday) additionalClass += ' today';
+                
+                datesHTML += `<div class="date-cell ${additionalClass}" data-year="${displayYear}" data-month="${displayMonth}" data-day="${cellDate}">${cellDate}</div>`;
+            }
+            monthYearElement.innerText = `${monthsEN[month]} ${year}`;
+            datesElement.innerHTML = datesHTML;
+
+            document.querySelectorAll('.date-cell').forEach(cell => {
+                cell.addEventListener('click', () => {
+                    const year = cell.dataset.year;
+                    const month = cell.dataset.month;
+                    const day = cell.dataset.day;
+                    console.log(`Selected date: ${day}/${parseInt(month)+1}/${year}`);
+                });
+            });
         }
-        setInterval(update, 1000);
+        
+        function prevMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+        
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+        prevBtn.addEventListener('click', prevMonth);
+        nextBtn.addEventListener('click', nextMonth);
+        renderCalendar();
     </script>
 </body>
+</html>
