@@ -6,11 +6,11 @@
     <title>VitalSight</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="../static/style.css">
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 </head>
 <body>
 
     <div class="crosses-bg" aria-hidden="true">
+        <!-- crosses animation (остава същото) -->
         <div class="cross" style="--x:8%;  --delay:0s;   --dur:14s; --size:1.4rem; --op:0.13;"></div>
         <div class="cross" style="--x:18%; --delay:2s;   --dur:18s; --size:2rem;   --op:0.09;"></div>
         <div class="cross" style="--x:30%; --delay:5s;   --dur:12s; --size:1rem;   --op:0.17;"></div>
@@ -78,53 +78,59 @@
             window.location.href = 'login.html';
         }
 
-        const socket = io("http://localhost:5000", {
-            auth: { token: token }
-        });
+        // ============================
+        // Функция за fetch() обновяване
+        // ============================
+        function fetchStatus() {
+            fetch("/api/status", {
+                headers: { 'Authorization': `Bearer ${token}` } // ако е нужно
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) return console.error(data.error);
 
-        socket.on('connect', () => {
-            console.log("Connected to server");
-        });
+                document.getElementById('t-val').innerText = data.temperature ?? '--';
+                document.getElementById('b-val').innerText = data.pulse ?? '--';
 
-        socket.on('connect_error', (err) => {
-            console.error("Socket connection error:", err.message);
-        });
+                const alarmCard = document.getElementById('alarm-card');
+                if (data.alarm || data.temperature < 20 || data.pulse < 20) {
+                    alarmCard.classList.add('alarm-active');
+                    document.getElementById('a-val').innerText = "DANGER";
+                } else {
+                    alarmCard.classList.remove('alarm-active');
+                    document.getElementById('a-val').innerText = "CLEAR";
+                }
 
-        socket.on('new_data', (data) => {
-            document.getElementById('t-val').innerText = data.temperature ?? '--';
-            document.getElementById('b-val').innerText = data.pulse ?? '--';
+                const distCard = document.getElementById('dist-card');
+                if (data.movement) {
+                    distCard.classList.add('alarm-active');
+                    document.getElementById('d-val').innerText = "ALERT";
+                } else {
+                    distCard.classList.remove('alarm-active');
+                    document.getElementById('d-val').innerText = "OK";
+                }
+            })
+            .catch(err => console.error("Failed to fetch status:", err));
+        }
 
-            const alarmCard = document.getElementById('alarm-card');
-            if (data.alarm || data.temperature < 20 || data.pulse < 20) {
-                alarmCard.classList.add('alarm-active');
-                document.getElementById('a-val').innerText = "DANGER";
-            } else {
-                alarmCard.classList.remove('alarm-active');
-                document.getElementById('a-val').innerText = "CLEAR";
-            }
-
-            const distCard = document.getElementById('dist-card');
-            if (data.movement) {
-                distCard.classList.add('alarm-active');
-                document.getElementById('d-val').innerText = "ALERT";
-            } else {
-                distCard.classList.remove('alarm-active');
-                document.getElementById('d-val').innerText = "OK";
-            }
-        });
+        // Обновяване на всеки 1 секунда
+        setInterval(fetchStatus, 1000);
+        fetchStatus(); // извикваме веднага при зареждане
 
         function handleLogout() {
             localStorage.removeItem('token');
             window.location.href = 'login.html';
         }
 
+        // ============================
+        // Календар (остае без промяна)
+        // ============================
         const monthYearElement = document.getElementById('monthYear');
         const datesElement     = document.getElementById('dates');
         const prevBtn          = document.getElementById('prevBtn');
         const nextBtn          = document.getElementById('nextBtn');
 
         let currentDate = new Date();
-
         const monthsEN = [
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
@@ -133,7 +139,6 @@
         function renderCalendar() {
             const year  = currentDate.getFullYear();
             const month = currentDate.getMonth();
-
             const firstDayOfMonth   = new Date(year, month, 1);
             const lastDayOfMonth    = new Date(year, month + 1, 0);
             const totalDays         = lastDayOfMonth.getDate();
@@ -144,7 +149,6 @@
             firstDayIndex -= 1;
 
             let datesHTML = '';
-
             for (let i = 0; i < 42; i++) {
                 let cellDate     = i - firstDayIndex + 1;
                 let displayMonth = month;
@@ -165,7 +169,7 @@
 
                 const today   = new Date();
                 const isToday = (displayYear  === today.getFullYear() &&
-                                 displayMonth === today.getMonth()    &&
+                                 displayMonth === today.getMonth() &&
                                  cellDate     === today.getDate());
 
                 let cls = '';
