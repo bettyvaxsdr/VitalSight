@@ -54,24 +54,6 @@
         </div>
     </div>
 
-    <div class="calendar">
-        <div class="block">
-            <button id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
-            <div class="monthYear" id="monthYear"></div>
-            <button id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
-        </div>
-        <div class="days">
-            <div class="day">Mon</div>
-            <div class="day">Tue</div>
-            <div class="day">Wed</div>
-            <div class="day">Thu</div>
-            <div class="day">Fri</div>
-            <div class="day">Sat</div>
-            <div class="day">Sun</div>
-        </div>
-        <div class="dates" id="dates"></div>
-    </div>
-
     <script>
         const token = localStorage.getItem('token');
         if (!token) {
@@ -117,80 +99,6 @@
             localStorage.removeItem('token');
             window.location.href = 'login.html';
         }
-
-        const monthYearElement = document.getElementById('monthYear');
-        const datesElement     = document.getElementById('dates');
-        const prevBtn          = document.getElementById('prevBtn');
-        const nextBtn          = document.getElementById('nextBtn');
-
-        let currentDate = new Date();
-
-        const monthsEN = [
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-        ];
-
-        function renderCalendar() {
-            const year  = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-
-            const firstDayOfMonth   = new Date(year, month, 1);
-            const lastDayOfMonth    = new Date(year, month + 1, 0);
-            const totalDays         = lastDayOfMonth.getDate();
-            const prevMonthLastDate = new Date(year, month, 0).getDate();
-
-            let firstDayIndex = firstDayOfMonth.getDay();
-            if (firstDayIndex === 0) firstDayIndex = 7;
-            firstDayIndex -= 1;
-
-            let datesHTML = '';
-
-            for (let i = 0; i < 42; i++) {
-                let cellDate     = i - firstDayIndex + 1;
-                let displayMonth = month;
-                let displayYear  = year;
-                let isCurrentMonth = true;
-
-                if (cellDate <= 0) {
-                    isCurrentMonth = false;
-                    displayMonth = month - 1;
-                    if (displayMonth < 0) { displayMonth = 11; displayYear = year - 1; }
-                    cellDate = prevMonthLastDate + cellDate;
-                } else if (cellDate > totalDays) {
-                    isCurrentMonth = false;
-                    displayMonth = month + 1;
-                    if (displayMonth > 11) { displayMonth = 0; displayYear = year + 1; }
-                    cellDate = cellDate - totalDays;
-                }
-
-                const today   = new Date();
-                const isToday = (displayYear  === today.getFullYear() &&
-                                 displayMonth === today.getMonth()    &&
-                                 cellDate     === today.getDate());
-
-                let cls = '';
-                if (!isCurrentMonth) cls += ' other-month';
-                if (isToday)         cls += ' today';
-
-                datesHTML += `<div class="date-cell${cls}" data-year="${displayYear}" data-month="${displayMonth}" data-day="${cellDate}">${cellDate}</div>`;
-            }
-
-            monthYearElement.innerText = `${monthsEN[month]} ${year}`;
-            datesElement.innerHTML     = datesHTML;
-
-            document.querySelectorAll('.date-cell').forEach(cell => {
-                cell.addEventListener('click', () => {
-                    const y = cell.dataset.year;
-                    const m = cell.dataset.month;
-                    const d = cell.dataset.day;
-                    console.log(`Selected date: ${d}/${parseInt(m)+1}/${y}`);
-                });
-            });
-        }
-
-        prevBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); });
-        nextBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
-        renderCalendar();
     </script>
 </body>
 </html>
