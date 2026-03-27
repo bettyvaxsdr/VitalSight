@@ -199,7 +199,7 @@ button {
 button:hover {
     background: rgba(255, 80, 80, 0.2);
     border-color: rgba(255, 80, 80, 0.3);
-    color: #ff6b6b;
+    color: #f5e3e3;
     transform: scale(1.01);
 }
 
