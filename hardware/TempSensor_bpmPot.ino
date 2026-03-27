@@ -25,7 +25,7 @@ void loop() {
   
   float tempC = sensors.getTempCByIndex(0);
   float tempF = sensors.toFahrenheit(tempC);
-s
+
   int rawValue = analogRead(potPin);
 
   currentBpm = map(rawValue, 0, 4095, 60, 180);
