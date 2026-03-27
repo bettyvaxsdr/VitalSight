@@ -78,7 +78,6 @@
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    // login_user() вече е извикан в backend → session cookie
                     window.location.href = '/';
                 } else {
                     errorMsg.textContent = data.message || 'Invalid credentials.';

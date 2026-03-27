@@ -1,41 +1,30 @@
-from flask import render_template, redirect, url_for, jsonify
-import requests
+from flask import jsonify, render_template
 from flask_login import login_required, current_user
-from website import create_app
+from website import create_app, db
+from website.models import HealthData
+import requests
 
 app = create_app()
 
 ESP32_IP = "192.168.8.75"
 
 @app.route('/')
+@login_required                      
 def index():
-    if not current_user.is_authenticated:
-        return redirect(url_for('login_page'))
     return render_template('home.html', user=current_user)
 
-@app.route('/login')
-def login_page():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    return render_template('login.html')
-
-@app.route('/signup')
-def signup_page():
-    return render_template('signup.html')
-
-# ... get_status and history routes stay the same ...
 @app.route('/api/status')
 @login_required
 def get_status():
     try:
-        res  = requests.get(f"http://{ESP32_IP}/data", timeout=2)  # fixed: requests.get not request.get
+        res  = requests.get(f"http://{ESP32_IP}/data", timeout=2)
         data = res.json()
- 
+
         pulse       = data.get("pulse")
         temperature = data.get("temperature")
         movement    = data.get("movement")
         state       = data.get("state")
- 
+
         alarm = False
         if pulse       is not None and (pulse < 40 or pulse > 120):
             alarm = True
@@ -43,7 +32,7 @@ def get_status():
             alarm = True
         if movement:
             alarm = True
- 
+
         return jsonify({
             "pulse":       pulse,
             "temperature": temperature,
@@ -51,12 +40,27 @@ def get_status():
             "state":       state,
             "alarm":       alarm
         })
- 
+
     except Exception as e:
         return jsonify({
             "error":   "ESP32 not reachable",
             "message": str(e)
         }), 500
+
+@app.route('/history/<int:id>', methods=['GET'])
+def history(id):
+    data = HealthData.query.filter_by(id=id).first()
+    if not data:
+        return jsonify({"message": "No data found."}), 404
+    return jsonify({
+        "id":          data.id,
+        "timestamp":   data.timestamp.isoformat(),
+        "pulse":       data.pulse,
+        "temperature": data.temperature,
+        "movement":    data.movement,
+        "state":       data.state,
+        "device_id":   data.device_id
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

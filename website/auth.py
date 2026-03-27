@@ -6,11 +6,16 @@ from flask_login import login_user, login_required, logout_user
 
 auth = Blueprint('auth', __name__)
 
-@auth.route('/login', methods=['GET', 'POST'])
+@auth.route('/login', methods=['GET'])
 def login_page():
-    if request.method == 'GET':
-        return render_template('login.html')
-    
+    return render_template('login.html')
+
+@auth.route('/signup', methods=['GET'])
+def signup_page():
+    return render_template('signup.html')
+
+@auth.route('/login', methods=['POST'])
+def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
@@ -29,7 +34,7 @@ def login_page():
     login_user(user, remember=True)
     return jsonify({'message': 'Logged in successfully.'}), 200
 
-@auth.route('/signup', methods=['POST'])
+@auth.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
     username = data.get('username', '').strip()
