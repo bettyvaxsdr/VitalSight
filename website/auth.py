@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from website.models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
@@ -6,8 +6,11 @@ from flask_login import login_user, login_required, logout_user
 
 auth = Blueprint('auth', __name__)
 
-@auth.route('/login', methods=['POST'])
-def login():
+@auth.route('/login', methods=['GET', 'POST'])
+def login_page():
+    if request.method == 'GET':
+        return render_template('login.html')
+    
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
@@ -17,7 +20,6 @@ def login():
 
     user = User.query.filter_by(username=username).first()
     
-    # Requirement: Tell them if user doesn't exist
     if not user:
         return jsonify({'message': 'No such user exists.'}), 404
 
@@ -45,7 +47,6 @@ def register():
     db.session.add(new_user)
     db.session.commit()
     
-    # Log them in immediately after registration
     login_user(new_user)
     return jsonify({'message': 'Account created successfully.'}), 201
 

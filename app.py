@@ -1,5 +1,4 @@
-from flask import render_template, redirect, url_for, jsonify
-import requests
+from flask import render_template, redirect, url_for
 from flask_login import login_required, current_user
 from website import create_app, db
 from website.models import HealthData
@@ -9,9 +8,8 @@ app = create_app()
 ESP32_IP = "192.168.8.75"
 
 @app.route('/')
+@login_required                      
 def index():
-    if not current_user.is_authenticated:
-        return redirect(url_for('login_page'))
     return render_template('home.html', user=current_user)
 
 @app.route('/login')
