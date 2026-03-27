@@ -53,7 +53,7 @@
 
             <div class="switch-hint">
                <span>Don't have an account?</span>
-               <a href="signup.html" class="switch-link">Sign up</a>
+               <a href="/signup" class="switch-link">Sign up</a>
             </div>
         </div>
     </div>
@@ -71,7 +71,7 @@
 
             setLoading(true);
             try {
-                const response = await fetch('http://localhost:5000/login', {
+                const response = await fetch('/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })

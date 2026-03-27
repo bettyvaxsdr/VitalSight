@@ -55,11 +55,6 @@
     </div>
 
     <script>
-        const token = localStorage.getItem('token');
-        if (!token) {
-           window.location.href = 'login.html';
-        }
-
         // ============================
         // Функция за fetch() обновяване
         // ============================
@@ -96,10 +91,9 @@
         // Обновяване на всеки 1 секунда
         setInterval(fetchStatus, 1000);
         fetchStatus(); // извикваме веднага при зареждане
-
-        function handleLogout() {
-            localStorage.removeItem('token');
-            window.location.href = 'login.html';
+        async function handleLogout() {
+            await fetch('/logout');
+            window.location.href = '/login';
         }
     </script>
 </body>

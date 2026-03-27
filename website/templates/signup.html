@@ -64,7 +64,7 @@
 
             <div class="switch-hint">
                 <span>Already have an account?</span>
-                <a href="login.html" class="switch-link">Sign in</a>
+                <a href="/login" class="switch-link">Sign in</a>
             </div>
         </div>
     </div>
@@ -93,7 +93,7 @@
 
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/register', {
+            const response = await fetch('/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password, device_id: deviceId })
@@ -101,7 +101,7 @@
             const data = await response.json();
             if (response.ok) {
                 successMsg.textContent = 'Account created! Redirecting to login…';
-                setTimeout(() => window.location.href = 'login.html', 1500);
+                setTimeout(() => window.location.href = '/login', 1500);
             } else {
                 errorMsg.textContent = data.message || 'Registration failed.';
             }
