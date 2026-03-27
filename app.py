@@ -1,4 +1,5 @@
-from flask import render_template, redirect, url_for
+from flask import render_template, redirect, url_for, jsonify
+import requests
 from flask_login import login_required, current_user
 from website import create_app, db
 from website.models import HealthData
