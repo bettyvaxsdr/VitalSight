@@ -31,7 +31,7 @@
         <div class="header">
             <h1>Welcome to VitalSight!</h1>
             <p>Check the vital parameters of your loved ones with ease.</p>
-            <button onclick="handleLogout()" style="margin-top:1rem;">Logout</button>
+            <button onclick="window.location.href='/login'" style="margin-top:1rem;">Logout</button>
         </div>
         <div class="cards-grid">
             <div class="card">
@@ -51,6 +51,12 @@
                 <div class="value" id="d-val" style="font-size: 1.5rem;">OK</div>
             </div>
         </div>
+
+        <a id="critical-btn" href="/critical" style="display:none; margin-top:0.5rem;">
+            <button style="background: rgba(255,0,0,0.3); border-color: rgba(255,0,0,0.5);">
+                <i class="fas fa-exclamation-circle"></i> View Critical Details
+            </button>
+        </a>
     </div>
 
     <script>
@@ -64,31 +70,30 @@
                 document.getElementById("t-val").innerText = data.temperature ?? "--";
                 document.getElementById("b-val").innerText = data.pulse ?? "--";
 
-
                 const statusEl = document.getElementById("a-val");
                 const alarmCard = document.getElementById("alarm-card");
                 statusEl.innerText = data.state;
 
-                // 🔥 Цветове според статус
-                
                 if (data.state === "OK") {
                     alarmCard.style.background = "green";
+                    document.getElementById("critical-btn").style.display = "none";
                 } else if (data.state === "HIGH TEMP" || data.state === "ABNORMAL PULSE") {
                     alarmCard.style.background = "orange";
+                    document.getElementById("critical-btn").style.display = "none";
                 } else if (data.state === "CRITICAL") {
                     alarmCard.style.background = "red";
+                    document.getElementById("critical-btn").style.display = "block";
                 }
 
-                // 🔥 ПУЛС ЦВЯТ
                 const beatCard = document.getElementById("beat-card");
 
                 if (data.pulse) {
                     if (data.pulse < 50 || data.pulse > 120) {
-                        beatCard.style.background = "red";        // опасно
+                        beatCard.style.background = "red";
                     } else if (data.pulse < 60 || data.pulse > 100) {
-                        beatCard.style.background = "orange";     // предупреждение
+                        beatCard.style.background = "orange";
                     } else {
-                        beatCard.style.background = "green";      // нормално
+                        beatCard.style.background = "green";
                     }
                 }
 
