@@ -54,43 +54,44 @@
     </div>
 
     <script>
-        function fetchStatus() {
-            fetch("/api/status")
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) return console.error(data.error);
+            async function fetchData() {
+            try {
+            const response = await fetch('/latest-data');
+            const data = await response.json();
 
-                document.getElementById('t-val').innerText = data.temperature ?? '--';
-                document.getElementById('b-val').innerText = data.pulse ?? '--';
-
-                const alarmCard = document.getElementById('alarm-card');
-                if (data.alarm) {
-                    alarmCard.classList.add('alarm-active');
-                    document.getElementById('a-val').innerText = "DANGER";
-                } else {
-                    alarmCard.classList.remove('alarm-active');
-                    document.getElementById('a-val').innerText = "CLEAR";
+                if (data.error) {
+                    console.log(data.error);
+                return;
                 }
 
-                const distCard = document.getElementById('dist-card');
-                if (data.movement) {
-                    distCard.classList.add('alarm-active');
-                    document.getElementById('d-val').innerText = "ALERT";
-                } else {
-                    distCard.classList.remove('alarm-active');
-                    document.getElementById('d-val').innerText = "OK";
-                }
-            })
-            .catch(err => console.error("Failed to fetch status:", err));
+                // Обновяване на стойности
+                document.getElementById("t-val").innerText = data.temperature ?? "--";
+                document.getElementById("b-val").innerText = data.pulse ?? "--";
+
+                // Статус
+                document.getElementById("a-val").innerText = data.state || "OK";
+
+                // Movement статус
+                document.getElementById("d-val").innerText = data.movement ? "MOVING" : "STILL";
+
+                // Цветове (по желание)
+                const beatCard = document.getElementById("beat-card");
+
+        if (data.pulse > 120 || data.pulse < 50) {
+                    beatCard.style.background = "red";
+        } else {
+                    beatCard.style.background = "";
         }
 
-        setInterval(fetchStatus, 1000);
-        fetchStatus();
+    } catch (err) {
+                    console.error("Error fetching data:", err);
+    }
+}
 
-        async function handleLogout() {
-            await fetch('/logout');
-            window.location.href = '/login';
-        }
+                // обновява на всеки 2 секунди
+                setInterval(fetchData, 2000);
+
+                // първоначално зареждане
+                fetchData();            
     </script>
-</body>
 </html>
