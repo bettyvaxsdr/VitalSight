@@ -42,6 +42,8 @@ def run_detector():
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL,
                                         cv2.CHAIN_APPROX_SIMPLE)
 
+        motion = any(cv2.contourArea(c) > 500 for c in contours)
+
         if motion:
             with _lock:
                 _last_motion_time = time.time()
