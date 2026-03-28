@@ -1,4 +1,4 @@
-from flask import jsonify, render_template, request
+from flask import jsonify, render_template, request, Response
 from flask_login import login_required, current_user
 from website import create_app, db
 from website.models import HealthData
@@ -7,6 +7,19 @@ import requests
 app = create_app()
 
 ESP32_IP = "192.168.8.75"
+ESP32_STREAM_URL = "http://192.168.1.100:81/stream"
+
+def generate():
+    stream = requests.get(ESP32_STREAM_URL, stream=True)
+    for chunk in stream.iter_content(chunk_size=1024):
+        if chunk:
+            yield chunk
+
+@app.route('/video')
+def video():
+    return Response(generate(),
+                    content_type='multipart/x-mixed-replace; boundary=frame')
+
 
 @app.route('/')
 @login_required                      
