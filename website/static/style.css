@@ -123,6 +123,17 @@ body::before {
     animation: shimmer 3s linear infinite;
 }
 
+.header h2 {
+    font-size: 1.5rem;
+    background: linear-gradient(90deg, #fff, #ffaea0, #fff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    margin-bottom: 0.75rem;
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+}
+
 @keyframes shimmer {
     0% { background-position: -200% center; }
     100% { background-position: 200% center; }
