@@ -54,44 +54,52 @@
     </div>
 
     <script>
-            async function fetchData() {
+        async function fetchData() {
             try {
-            const response = await fetch('/latest-data');
-            const data = await response.json();
+                const response = await fetch('/latest-data');
+                const data = await response.json();
 
-                if (data.error) {
-                    console.log(data.error);
-                return;
-                }
+                if (data.error) return;
 
-                // Обновяване на стойности
                 document.getElementById("t-val").innerText = data.temperature ?? "--";
                 document.getElementById("b-val").innerText = data.pulse ?? "--";
 
-                // Статус
-                document.getElementById("a-val").innerText = data.state || "OK";
 
-                // Movement статус
-                document.getElementById("d-val").innerText = data.movement ? "MOVING" : "STILL";
+                const statusEl = document.getElementById("a-val");
+                const alarmCard = document.getElementById("alarm-card");
+                statusEl.innerText = data.state;
 
-                // Цветове (по желание)
+                // 🔥 Цветове според статус
+                
+                if (data.state === "OK") {
+                    alarmCard.style.background = "green";
+                } else if (data.state === "HIGH TEMP" || data.state === "ABNORMAL PULSE") {
+                    alarmCard.style.background = "orange";
+                } else if (data.state === "CRITICAL") {
+                    alarmCard.style.background = "red";
+                }
+
+                // 🔥 ПУЛС ЦВЯТ
                 const beatCard = document.getElementById("beat-card");
 
-        if (data.pulse > 120 || data.pulse < 50) {
-                    beatCard.style.background = "red";
-        } else {
-                    beatCard.style.background = "";
+                if (data.pulse) {
+                    if (data.pulse < 50 || data.pulse > 120) {
+                        beatCard.style.background = "red";        // опасно
+                    } else if (data.pulse < 60 || data.pulse > 100) {
+                        beatCard.style.background = "orange";     // предупреждение
+                    } else {
+                        beatCard.style.background = "green";      // нормално
+                    }
+                }
+
+                document.getElementById("d-val").innerText = data.movement ? "MOVING" : "STILL";
+
+            } catch (err) {
+                console.error(err);
+            }
         }
 
-    } catch (err) {
-                    console.error("Error fetching data:", err);
-    }
-}
-
-                // обновява на всеки 2 секунди
-                setInterval(fetchData, 2000);
-
-                // първоначално зареждане
-                fetchData();            
+        setInterval(fetchData, 2000);
+        fetchData();
     </script>
 </html>
