@@ -7,13 +7,17 @@ import requests
 app = create_app()
 
 ESP32_IP = "192.168.8.75"
-ESP32_STREAM_URL = "http://192.168.1.100:81/stream"
+ESP32_STREAM_URL = "http://192.168.8.77:81/stream"
+
+@app.route('/critical')
+def critical():
+    return render_template("critical.html")
 
 def generate():
-    stream = requests.get(ESP32_STREAM_URL, stream=True)
-    for chunk in stream.iter_content(chunk_size=1024):
-        if chunk:
-            yield chunk
+    with requests.get(ESP32_STREAM_URL, stream=True) as stream:
+        for chunk in stream.iter_content(chunk_size=1024):
+            if chunk:
+                yield chunk
 
 @app.route('/video')
 def video():
