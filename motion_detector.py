@@ -1,55 +1,40 @@
 import cv2
+import numpy as np
 import time
-import threading
 
-STREAM_URL = "http://192.168.8.77/stream"  # IP на ESP32-CAM
-NO_MOTION_THRESHOLD = 10  # секунди без движение = alert
+STREAM_URL = "http://192.168.8.77/stream"  # или :81/stream
 
-_movement_detected = False
-_last_motion_time  = time.time()
-_lock = threading.Lock()
+cap = cv2.VideoCapture(STREAM_URL)
 
-def get_movement_status():
-    """Извиква се от app.py"""
-    with _lock:
-        no_motion_for = time.time() - _last_motion_time
-        return no_motion_for > NO_MOTION_THRESHOLD
+prev_frame = None
+no_motion_start = None
+NO_MOTION_THRESHOLD = 15  # секунди без движение
 
-def run_detector():
-    global _last_motion_time
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        print("Не може да чете stream-а, проверете URL-а")
+        break
 
-    cap = cv2.VideoCapture(STREAM_URL)
-    prev_frame = None
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("Stream изгубен, опит за свързване...")
-            time.sleep(2)
-            cap = cv2.VideoCapture(STREAM_URL)
-            continue
-
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        gray = cv2.GaussianBlur(gray, (21, 21), 0)
-
-        if prev_frame is None:
-            prev_frame = gray
-            continue
-
-        delta    = cv2.absdiff(prev_frame, gray)
-        thresh   = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
-        thresh   = cv2.dilate(thresh, None, iterations=2)
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL,
-                                        cv2.CHAIN_APPROX_SIMPLE)
-
-        motion = any(cv2.contourArea(c) > 500 for c in contours)
-
-        if motion:
-            with _lock:
-                _last_motion_time = time.time()
-
+    if prev_frame is None:
         prev_frame = gray
+        continue
 
-# Стартира в background thread
-detector_thread = threading.Thread(target=run_detector, daemon=True)
-detector_thread.start()
+    diff = cv2.absdiff(prev_frame, gray)
+    thresh = cv2.threshold(diff, 25, 255, cv2.THRESH_BINARY)[1]
+    motion_score = np.sum(thresh)
+
+    if motion_score < 5000:
+        if no_motion_start is None:
+            no_motion_start = time.time()
+        else:
+            elapsed = time.time() - no_motion_start
+            print(f"Няма движение: {int(elapsed)} сек.")
+            if elapsed >= NO_MOTION_THRESHOLD:
+                print("ALERT! Няма движение 15 секунди!")
+                # тук после добавяме връзка с гривната
+    else:
+        no_motion_start = None  # reset п
